@@ -1,25 +1,114 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Untitled"
+output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-## Loading and preprocessing the data
+## Total number of steps
+
+###First, we download the dataset, unzip it and make the dataframe of it.
+
+```{r}
+library (ggplot2)
+URL<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+    dir<-paste(getwd(),"/a.zip",sep="")#get url
+    download.file(URL,dir)#upload file
+    unzip(dir)#unzip file
+    Frame<-read.csv("activity.csv")
+    Frame$date<-as.POSIXct(Frame$date)
+```
+###Then we plot the number of steps by date. 
+```{r}
+C0<-aggregate(steps~date,data=Frame,FUN=sum)
+    C0$date<-as.POSIXct(C0$date)
+    ggplot(C0,aes(x=date,y=steps))+ geom_bar(stat="identity")
+```
+## Mean number of steps
+
+###We also plot the mean number of steps.
+
+```{r}
+C1<-aggregate(steps~date,data=Frame,FUN=mean)
+    C1$date<-as.POSIXct(C1$date)
+    ggplot(C1,aes(x=date,y=steps))+ geom_line()+ggtitle("Average number f steps by date")
+```
+
+## Median number of steps
+
+###We also plot the median number of steps by 5minute interval.As we see, during most of the 5minute intervals the number of steps was equal to zero.
+```{r}
+C2<-aggregate(steps~date,data=Frame,FUN=median)
+    C2$date<-as.POSIXct(C2$date)
+    ggplot(C2,aes(x=date,y=steps))+ geom_line()+ggtitle("Median number Of steps by date")
+```
+##Average number of steps
+###We also plot average number of steps taken by interval
+```{r}
+C4<-aggregate(steps~interval,data=Frame,FUN=mean)
+#plot average by INTERVAL
+ggplot(C4,aes(x=interval,y=steps))+ geom_line()+ggtitle("Average number f steps by interval")
+```
+##Maximal number of steps
+###We also find the 5minute interval where the number of steps is the largest
+```{r}
+Frame$date<-as.POSIXct(Frame$date)
+d<-which.max(Frame[,1])
+C<-c(as.character(Frame[d,2]), as.character(Frame[d,3]/100))
+C
+```
+##Imputing missing values
+###Number of missing values is
+```{r}
+sum(is.na(Frame$steps))
+```
+###Missing values are imputed by placing the median by the interval where NA was found instead of NA. Then, the histogram of total number of steps per day was made.
+```{r}
+Frame2<-Frame
+Frame2$date<-as.POSIXct(Frame2$date)
+Frame1<-aggregate(steps~interval,data=Frame2,FUN=median,na.rm=TRUE)#median by time
+for(i in 1:dim(Frame2)[1])
+{
+  if(is.na(Frame2$steps[i]))
+  {
+   Frame2$steps[i]<-Frame1$steps[which(Frame2$interval[i]==Frame1$interval)][1]
+  }
+}
+C0<-aggregate(steps~date,data=Frame2,FUN=sum)
+```
+##Total number of steps taken each day
+```{r}
+ggplot(C0,aes(x=date,y=steps))+ geom_bar(stat="identity")+ggtitle("Total number of steps taken each day")
+```
+##Median number of steps taken each day
+```{r}
+median(C0$steps,na.rm=TRUE)
+```
+##Mean number of steps taken per day 
+```{r}
+mean(C0$steps,na.rm=TRUE)
+```
+##Weekday and weekend patterns
+All the days were identified as either weekdays or weekends. Dataframe was split and divided by 2 groups - weekends and weekdays.Then these data were plotted
+```{r}
+Frame2$weekday<-rep("weekday",dim(Frame2)[1])
+for (i in (1:dim(Frame2)[1]))
+{
+  if((weekdays(Frame2$date[i])=="Sunday")|(weekdays(Frame2$date[i])=="Saturday"))
+  {
+    Frame2$weekday[i]="weekend"
+  }
+}
+Frame2$weekday<-as.factor(Frame2$weekday)
+Frame3<-split(Frame2,Frame2$weekday)
 
 
+Weekend<-aggregate(steps~interval,data=Frame3$weekend,FUN=mean,na.rm=TRUE)
 
-## What is mean total number of steps taken per day?
+Weekday<-aggregate(steps~interval,data=Frame3$weekday,FUN=mean,na.rm=TRUE)
+ggplot(Weekend,aes(x=interval,y=steps))+ geom_line()+ggtitle ("Mean number of steps in weekends")
+ggplot(Weekday,aes(x=interval,y=steps))+ geom_line()+ggtitle ("Mean number of steps in weekdays")
+```
 
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
