@@ -28,7 +28,7 @@ C0<-aggregate(steps~date,data=Frame,FUN=sum)
 ```
 ## Mean number of steps
 
-###We also plot the mean number of steps.
+We also plot the mean number of steps.
 
 ```{r}
 C1<-aggregate(steps~date,data=Frame,FUN=mean)
@@ -38,33 +38,36 @@ C1<-aggregate(steps~date,data=Frame,FUN=mean)
 
 ## Median number of steps
 
-###We also plot the median number of steps by 5minute interval.As we see, during most of the 5minute intervals the number of steps was equal to zero.
+We also plot the median number of steps by 5minute interval.As we see, the number of steps was equal to zero during most of the 5minute intervals.
 ```{r}
 C2<-aggregate(steps~date,data=Frame,FUN=median)
     C2$date<-as.POSIXct(C2$date)
     ggplot(C2,aes(x=date,y=steps))+ geom_line()+ggtitle("Median number Of steps by date")
 ```
-##Average number of steps
-###We also plot average number of steps taken by interval
+
+## Average number of steps
+
+We also plot average number of steps taken by interval
 ```{r}
 C4<-aggregate(steps~interval,data=Frame,FUN=mean)
 #plot average by INTERVAL
 ggplot(C4,aes(x=interval,y=steps))+ geom_line()+ggtitle("Average number f steps by interval")
 ```
-##Maximal number of steps
-###We also find the 5minute interval where the number of steps is the largest
+
+## Maximal number of steps
+We also find the 5minute interval where the number of steps is the largest
 ```{r}
 Frame$date<-as.POSIXct(Frame$date)
 d<-which.max(Frame[,1])
 C<-c(as.character(Frame[d,2]), as.character(Frame[d,3]/100))
 C
 ```
-##Imputing missing values
-###Number of missing values is
+## Imputing missing values
+Number of missing values is
 ```{r}
 sum(is.na(Frame$steps))
 ```
-###Missing values are imputed by placing the median by the interval where NA was found instead of NA. Then, the histogram of total number of steps per day was made.
+###Missing values are imputed by placing the median by the interval where NA was found instead of NA. 
 ```{r}
 Frame2<-Frame
 Frame2$date<-as.POSIXct(Frame2$date)
@@ -79,21 +82,27 @@ for(i in 1:dim(Frame2)[1])
 C0<-aggregate(steps~date,data=Frame2,FUN=sum)
 ```
 ##Total number of steps taken each day
+The histogram of the total number of steps per day was made. Mean and median number of steps are also displayed above
 ```{r}
-ggplot(C0,aes(x=date,y=steps))+ geom_bar(stat="identity")+ggtitle("Total number of steps taken each day")
+ggplot(C0,aes(x=date,y=steps))+ geom_bar(stat="identity")+ggtitle("Total number of steps taken each day")+geom_hline(aes(yintercept=median(C0$steps,na.rm=TRUE), linetype="Median"), color = "blue",show.legend= TRUE)+geom_hline(aes(yintercept=mean(C0$steps,na.rm=TRUE), linetype="Mean"), color = "red",show.legend= TRUE) +scale_linetype_manual(name = "number of steps", values = c(2, 2), 
+guide = guide_legend(override.aes = list(color = c("blue", "red"))))
+
 ```
-##Median number of steps taken each day
+
+ Median number of steps taken each day is
 ```{r}
 median(C0$steps,na.rm=TRUE)
 ```
-##Mean number of steps taken per day 
+ 
+ Mean number of steps taken per day is
 ```{r}
 mean(C0$steps,na.rm=TRUE)
 ```
-##Weekday and weekend patterns
+## Weekday and weekend patterns
 All the days were identified as either weekdays or weekends. Dataframe was split and divided by 2 groups - weekends and weekdays.Then these data were plotted
 ```{r}
 Frame2$weekday<-rep("weekday",dim(Frame2)[1])
+invisible( Sys.setlocale("LC_ALL","English"))
 for (i in (1:dim(Frame2)[1]))
 {
   if((weekdays(Frame2$date[i])=="Sunday")|(weekdays(Frame2$date[i])=="Saturday"))
@@ -104,7 +113,7 @@ for (i in (1:dim(Frame2)[1]))
 Frame2$weekday<-as.factor(Frame2$weekday)
 Frame3<-split(Frame2,Frame2$weekday)
 
-
+##split надо корректно
 Weekend<-aggregate(steps~interval,data=Frame3$weekend,FUN=mean,na.rm=TRUE)
 
 Weekday<-aggregate(steps~interval,data=Frame3$weekday,FUN=mean,na.rm=TRUE)
